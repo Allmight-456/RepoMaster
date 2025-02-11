@@ -35,9 +35,11 @@ function App() {
         default:
           endpoint = 'generate-docs-from-url';
       }
-
+  
       const response = await axios.post(`http://127.0.0.1:8000/${endpoint}`, { url: repoUrl });
-      setDocumentation(response.data);
+      // For README, extract response.data.readme
+      const output = generateType === 'README' ? response.data.readme : response.data;
+      setDocumentation(output);
     } catch (error) {
       console.error(`Error generating ${generateType.toLowerCase()}:`, error);
       alert(`Failed to generate ${generateType.toLowerCase()}`);
@@ -52,13 +54,13 @@ function App() {
   };
 
   const formatDocumentation = (doc) => {
-    return doc.replace(/\\n/g, '\n').replace(/\n\n/g, '\n');
+    return doc.replace(/\\n/g, '\n');
   };
 
   return (
     <div className={`min-h-screen flex flex-col items-center justify-center p-6 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}>
       <header className="text-center mb-8">
-        <h1 className="text-4xl text-teal-600 font-semibold">RepoMaster</h1>
+        <h1 className="text-4xl text-teal-600 font-semibold ">RepoMaster</h1>
         <p className="text-lg mt-4">Generate documentation from a GitHub repository URL.</p>
         <button
           onClick={() => setDarkMode(!darkMode)}
@@ -77,18 +79,19 @@ function App() {
             className={`w-full p-4 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white focus:ring-blue-400' : 'bg-white border-gray-300 text-black focus:ring-blue-400'}`}
           />
         </div>
-        <div className="flex justify-between mb-4">
+        {/* Update this div to stack elements on mobile */}
+        <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:justify-between sm:space-x-2 mb-4">
           <button
             onClick={handleGenerateDocs}
             disabled={loading}
-            className={`py-2 px-6 rounded-lg shadow-md focus:outline-none disabled:opacity-50 ${darkMode ? 'bg-teal-600 text-white hover:bg-teal-700' : 'bg-black text-white hover:bg-gray-800'}`}
+            className={`w-full sm:w-auto py-2 px-6 rounded-lg shadow-md focus:outline-none disabled:opacity-50 ${darkMode ? 'bg-teal-600 text-white hover:bg-teal-700' : 'bg-black text-white hover:bg-gray-800'}`}
           >
             Generate
           </button>
           <select
             value={generateType}
             onChange={(e) => setGenerateType(e.target.value)}
-            className={`ml-2 py-2 px-4 rounded-lg shadow-md focus:outline-none ${darkMode ? 'bg-gray-700 text-white' : 'bg-white text-black'}`}
+            className={`w-full sm:w-auto py-2 px-4 rounded-lg shadow-md focus:outline-none ${darkMode ? 'bg-gray-700 text-white' : 'bg-white text-black'}`}
           >
             <option value="README">README</option>
             <option value="Dockerfile">Dockerfile</option>
@@ -129,15 +132,30 @@ function App() {
             </div>
 
             {view === 'raw' ? (
-              <pre className={`p-4 rounded-lg text-sm font-mono overflow-x-auto ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-800'}`}>{formatDocumentation(documentation)}</pre>
+              <pre className={`p-4 rounded-lg text-sm font-mono overflow-x-auto whitespace-pre-wrap break-words max-w-full ${
+                darkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-800'
+              }`}>
+                {formatDocumentation(documentation)}
+              </pre>
             ) : (
-              <div className={`p-4 rounded-lg text-sm ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-800'}`}>
+              <div className={`p-4 rounded-lg text-sm overflow-x-hidden ${
+                darkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-800'
+              }`}>
                 <ReactMarkdown
-                  className={`prose ${darkMode ? 'prose-dark' : ''}`}
+                  className={`prose max-w-none break-words ${darkMode ? 'prose-dark' : ''} prose-pre:overflow-x-auto prose-pre:whitespace-pre-wrap`}
                   components={{
-                    h1: ({ node, ...props }) => <h1 {...props} className="text-3xl font-semibold text-blue-600" />,
-                    h2: ({ node, ...props }) => <h2 {...props} className="text-2xl font-semibold text-blue-500" />,
-                    h3: ({ node, ...props }) => <h3 {...props} className="text-xl font-semibold text-blue-400" />,
+                    h1: ({ node, ...props }) => <h1 {...props} className="text-3xl font-semibold text-blue-600 break-words" />,
+                    h2: ({ node, ...props }) => <h2 {...props} className="text-2xl font-semibold text-blue-500 break-words" />,
+                    h3: ({ node, ...props }) => <h3 {...props} className="text-xl font-semibold text-blue-400 break-words" />,
+                    code: ({ node, inline, ...props }) => 
+                      inline ? (
+                        <code {...props} className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded" />
+                      ) : (
+                        <code {...props} className="block p-4 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-x-auto whitespace-pre-wrap" />
+                      ),
+                    pre: ({ node, ...props }) => (
+                      <pre {...props} className="overflow-x-auto whitespace-pre-wrap break-words" />
+                    ),
                   }}
                 >
                   {formatDocumentation(documentation)}

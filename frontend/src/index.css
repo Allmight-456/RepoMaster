@@ -4,6 +4,12 @@
 
 .prose-dark {
   color: white;
+  --tw-prose-body: theme('colors.gray.200');
+  --tw-prose-headings: theme('colors.white');
+  --tw-prose-links: theme('colors.blue.400');
+  --tw-prose-code: theme('colors.gray.200');
+  --tw-prose-pre-code: theme('colors.gray.200');
+  --tw-prose-pre-bg: theme('colors.gray.800');
 }
 
 .prose-dark h1,
@@ -11,4 +17,34 @@
 .prose-dark h3,
 .prose-dark p {
   color: white;
+}
+
+/* Custom styles for documentation container */
+.prose {
+  max-width: none !important;
+}
+
+.prose pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.prose code {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Ensure code blocks don't overflow */
+pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+code {
+  max-width: 100%;
+  word-wrap: break-word;
 }
