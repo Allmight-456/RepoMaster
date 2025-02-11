@@ -36,7 +36,7 @@ function App() {
           endpoint = 'generate-docs-from-url';
       }
   
-      const response = await axios.post(`https://repomaster.onrender.com${endpoint}`, { url: repoUrl });
+      const response = await axios.post(`https://repomaster.onrender.com/${endpoint}`, { url: repoUrl });
       // For README, extract response.data.readme
       const output = generateType === 'README' ? response.data.readme : response.data;
       setDocumentation(output);
