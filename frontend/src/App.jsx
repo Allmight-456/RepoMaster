@@ -8,6 +8,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [view, setView] = useState('preview'); // 'raw' or 'preview'
   const [darkMode, setDarkMode] = useState(false);
+  const [generateType, setGenerateType] = useState('README'); // 'README', 'Dockerfile', 'Docker Compose'
 
   useEffect(() => {
     if (darkMode) {
@@ -20,11 +21,26 @@ function App() {
   const handleGenerateDocs = async () => {
     setLoading(true);
     try {
-      const response = await axios.post('http://127.0.0.1:8000/generate-docs-from-url', { url: repoUrl });
+      let endpoint = '';
+      switch (generateType) {
+        case 'README':
+          endpoint = 'generate-docs-from-url';
+          break;
+        case 'Dockerfile':
+          endpoint = 'generate-dockerfile';
+          break;
+        case 'Docker Compose':
+          endpoint = 'generate-docker-compose';
+          break;
+        default:
+          endpoint = 'generate-docs-from-url';
+      }
+
+      const response = await axios.post(`http://127.0.0.1:8000/${endpoint}`, { url: repoUrl });
       setDocumentation(response.data);
     } catch (error) {
-      console.error('Error generating documentation:', error);
-      alert('Failed to generate documentation');
+      console.error(`Error generating ${generateType.toLowerCase()}:`, error);
+      alert(`Failed to generate ${generateType.toLowerCase()}`);
     }
     setLoading(false);
   };
@@ -69,6 +85,15 @@ function App() {
           >
             Generate
           </button>
+          <select
+            value={generateType}
+            onChange={(e) => setGenerateType(e.target.value)}
+            className={`ml-2 py-2 px-4 rounded-lg shadow-md focus:outline-none ${darkMode ? 'bg-gray-700 text-white' : 'bg-white text-black'}`}
+          >
+            <option value="README">README</option>
+            <option value="Dockerfile">Dockerfile</option>
+            <option value="Docker Compose">Docker Compose</option>
+          </select>
         </div>
 
         {loading && (
